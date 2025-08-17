@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahjong Shizen-Zho</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>Mahjong Shizen-Zho</h1>
+            <div class="game-info">
+                <div class="stats">
+                    <span id="tiles-remaining">Tiles: 144</span>
+                    <span id="connectable-tiles">Connectable: 0</span>
+                    <span id="timer">Time: 00:00</span>
+                    <span id="solution-status">Solution: Available</span>
+                </div>
+                <div class="controls">
+                    <button id="new-game">New Game</button>
+                    <button id="solve-game">Solve</button>
+                    <button id="pause-game">Pause</button>
+                </div>
+            </div>
+        </header>
+        <div class="game-board" id="game-board"></div>
+        <div class="message" id="message"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
