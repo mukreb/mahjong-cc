@@ -1,0 +1,24 @@
+{
+  "name": "Mahjong Game Dev Environment",
+  "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:18",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  
+  "postCreateCommand": "npm install && curl -fsSL https://claude.ai/install.sh | sh",
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-playwright.playwright",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+  
+  "forwardPorts": [3000, 8080],
+  
+  "remoteUser": "node"
+}
