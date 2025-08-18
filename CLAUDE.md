@@ -14,7 +14,7 @@
 - Show 'pause'
 - Show a timer to see how fast you are solving the puzzle
 - When clicking on 2 tiles that can be removed, show an elbow connector line that shows connection between the 2 tiles. The line should not cross other tiles
-- When finishing the game, congratulate the gamer, also show the total time to finish the game
+- When finishing the game, congratulate the gamer, also show the total time to finish the game. 
 
 # Game setup
 - When creating a new board, it should always be possible to finish the game
