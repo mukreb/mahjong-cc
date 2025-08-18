@@ -10,6 +10,7 @@
   },
   
   "postCreateCommand": "npm install && npm install -g @anthropic-ai/claude-cli",
+  "postStartCommand": "sudo service ssh restart || sudo /usr/sbin/sshd -D -p 2222 &",
   
   "customizations": {
     "vscode": {
@@ -22,6 +23,12 @@
   },
   
   "forwardPorts": [3000, 8080, 2222],
+  "portsAttributes": {
+    "2222": {
+      "label": "SSH",
+      "onAutoForward": "public"
+    }
+  },
   
   "remoteUser": "node"
 }
