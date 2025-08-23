@@ -8,24 +8,90 @@
 </head>
 <body>
     <div class="game-container">
-        <header>
+        <!-- Game Mode Selection Screen -->
+        <div class="mode-selection" id="mode-selection">
             <h1>Mahjong Shizen-Zho</h1>
-            <div class="game-info">
-                <div class="stats">
-                    <span id="tiles-remaining">Tiles: 144</span>
-                    <span id="connectable-tiles">Connectable: 0</span>
-                    <span id="timer">Time: 00:00</span>
-                    <span id="solution-status">Solution: Available</span>
+            <div class="mode-buttons">
+                <button id="single-player-btn" class="mode-btn">Single Player</button>
+                <button id="multiplayer-btn" class="mode-btn">Multiplayer</button>
+            </div>
+            <div class="high-scores" id="high-scores">
+                <h3>High Scores - Top 10</h3>
+                <ol id="scores-list">
+                    <li>Loading...</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Multiplayer Waiting Room -->
+        <div class="waiting-room" id="waiting-room" style="display: none;">
+            <h2>Multiplayer Lobby</h2>
+            <div class="player-info">
+                <p>Your name: <span id="player-name"></span></p>
+                <p>Room ID: <span id="room-id"></span></p>
+            </div>
+            <div class="room-status">
+                <div id="waiting-message">Waiting for another player to join...</div>
+                <button id="start-multiplayer-game" style="display: none;">Start Game</button>
+                <button id="leave-room">Leave Room</button>
+            </div>
+            <div class="available-rooms">
+                <h3>Available Rooms</h3>
+                <div id="rooms-list">No rooms available</div>
+            </div>
+        </div>
+
+        <!-- Main Game Interface -->
+        <div class="game-interface" id="game-interface" style="display: none;">
+            <header>
+                <h1>Mahjong Shizen-Zho</h1>
+                <div class="game-info">
+                    <div class="stats">
+                        <span id="tiles-remaining">Tiles: 80</span>
+                        <span id="connectable-tiles">Connectable: 0</span>
+                        <span id="timer">Time: 00:00</span>
+                        <span id="solution-status">Solution: Available</span>
+                        <span id="game-mode-display">Single Player</span>
+                    </div>
+                    <div class="controls">
+                        <button id="new-game">New Game</button>
+                        <button id="solve-game">Solve</button>
+                        <button id="auto-solve">Auto Solve</button>
+                        <button id="pause-game">Pause</button>
+                        <button id="back-to-menu">Menu</button>
+                    </div>
                 </div>
-                <div class="controls">
-                    <button id="new-game">New Game</button>
-                    <button id="solve-game">Solve</button>
-                    <button id="pause-game">Pause</button>
+                <!-- Multiplayer specific stats -->
+                <div class="multiplayer-stats" id="multiplayer-stats" style="display: none;">
+                    <div class="player-score">
+                        <span id="player1-name">Player 1</span>: <span id="player1-score">0</span> tiles
+                    </div>
+                    <div class="player-score">
+                        <span id="player2-name">Player 2</span>: <span id="player2-score">0</span> tiles
+                    </div>
+                </div>
+            </header>
+            <div class="game-board" id="game-board"></div>
+            <div class="message" id="message"></div>
+        </div>
+
+        <!-- Game Completion Modal -->
+        <div class="completion-modal" id="completion-modal" style="display: none;">
+            <div class="modal-content">
+                <h2 id="completion-title">🎉 Congratulations!</h2>
+                <div id="completion-message"></div>
+                <div class="completion-stats">
+                    <p>Time: <span id="final-time"></span></p>
+                    <div id="high-score-message" style="display: none;">
+                        <p>🏆 New High Score!</p>
+                    </div>
+                </div>
+                <div class="completion-buttons">
+                    <button id="play-again">Play Again</button>
+                    <button id="back-to-menu-final">Back to Menu</button>
                 </div>
             </div>
-        </header>
-        <div class="game-board" id="game-board"></div>
-        <div class="message" id="message"></div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
