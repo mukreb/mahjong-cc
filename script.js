@@ -84,7 +84,15 @@ class MahjongApp {
         });
 
         document.getElementById('back-to-menu').addEventListener('click', () => {
-            this.backToMenu();
+            // Prevent accidental navigation during active gameplay
+            if (this.game && this.game.tilesRemaining > 0) {
+                const confirmExit = confirm('Are you sure you want to return to the main menu? Your current game progress will be lost.');
+                if (confirmExit) {
+                    this.backToMenu();
+                }
+            } else {
+                this.backToMenu();
+            }
         });
 
         // Completion modal
@@ -699,8 +707,9 @@ class MahjongGame {
     }
 
     handleTileClick(row, col) {
-        if (this.gamePaused || this.solvingInProgress) return;
+        if (this.gamePaused) return;
         
+        // Allow clicks during solve animations - don't block on solvingInProgress
         const tile = this.grid[row][col];
         if (!tile) return;
         
@@ -717,12 +726,13 @@ class MahjongGame {
                     const tile1 = { row: this.selectedTile.row, col: this.selectedTile.col, type: this.selectedTile.type };
                     const tile2 = { row, col, type: tile.type };
                     
-                    // Show connection line first, then remove tiles after delay
+                    // Show connection line and remove tiles - no blocking
                     this.showConnectionLine(this.selectedTile, { row, col });
                     
-                    // Clear selection immediately to prevent further clicks
+                    // Clear selection and allow immediate new selections
                     this.deselectTile();
                     
+                    // Remove tiles with animation but don't block further interactions
                     setTimeout(() => {
                         this.removeTilePair(tile1, tile2);
                     }, 800); // Show line for 800ms before removing
@@ -744,6 +754,9 @@ class MahjongGame {
 
 
     selectTile(row, col, tile) {
+        // First clear any existing selections
+        this.clearAllSelections();
+        
         this.selectedTile = { row, col, type: tile.type };
         this.getTileElement(row, col).classList.add('selected');
     }
@@ -753,6 +766,16 @@ class MahjongGame {
             this.getTileElement(this.selectedTile.row, this.selectedTile.col).classList.remove('selected');
             this.selectedTile = null;
         }
+        // Also clear any stray selected tiles
+        this.clearAllSelections();
+    }
+
+    clearAllSelections() {
+        // Clear any tiles that have the selected class
+        document.querySelectorAll('.tile.selected').forEach(element => {
+            element.classList.remove('selected');
+        });
+        this.selectedTile = null;
     }
 
     getTileElement(row, col) {
@@ -990,18 +1013,26 @@ class MahjongGame {
         const element1 = this.getTileElement(tile1.row, tile1.col);
         const element2 = this.getTileElement(tile2.row, tile2.col);
         
-        // Immediately update to empty state for consistency
-        element1.innerHTML = '';
-        element2.innerHTML = '';
-        element1.className = 'tile empty';
-        element2.className = 'tile empty';
-        element1.dataset.row = tile1.row;
-        element1.dataset.col = tile1.col;
-        element2.dataset.row = tile2.row;
-        element2.dataset.col = tile2.col;
+        // Clear any selected states from the elements being removed
+        if (element1) {
+            element1.classList.remove('selected');
+            element1.innerHTML = '';
+            element1.className = 'tile empty';
+            element1.dataset.row = tile1.row;
+            element1.dataset.col = tile1.col;
+        }
+        if (element2) {
+            element2.classList.remove('selected');
+            element2.innerHTML = '';
+            element2.className = 'tile empty';
+            element2.dataset.row = tile2.row;
+            element2.dataset.col = tile2.col;
+        }
         
         this.tilesRemaining -= 2;
-        this.selectedTile = null;
+        
+        // Clear all visual selections to prevent stray highlights
+        this.clearAllSelections();
         
         // Update scores
         if (this.gameMode === 'multiplayer') {
@@ -1097,38 +1128,34 @@ class MahjongGame {
     }
 
     solveOneStep() {
-        if (this.solvingInProgress) return;
-        
         const matches = this.findAllMatches();
         if (matches.length === 0) {
             this.showMessage('No more matches available!', 'error');
             return;
         }
         
-        this.solvingInProgress = true;
         const [tile1, tile2] = matches[0];
         
         // Highlight the tiles to be removed
         const element1 = this.getTileElement(tile1.row, tile1.col);
         const element2 = this.getTileElement(tile2.row, tile2.col);
         
-        element1.classList.add('selected');
-        element2.classList.add('selected');
+        if (element1) element1.classList.add('selected');
+        if (element2) element2.classList.add('selected');
         
         // Show connection line with standard timing for manual solve
         this.showConnectionLine(tile1, tile2, 800);
         
         setTimeout(() => {
-            element1.classList.remove('selected');
-            element2.classList.remove('selected');
+            if (element1) element1.classList.remove('selected');
+            if (element2) element2.classList.remove('selected');
             this.removeTilePair(tile1, tile2);
-            this.solvingInProgress = false;
-        }, Math.max(this.solveDelay, 800)); // Ensure line is visible for at least 800ms
+        }, 800); // Show line for 800ms before removing
     }
 
     autoSolve() {
         // This is now called on mousedown - start auto-solving
-        if (this.solvingInProgress || this.autoSolving) return;
+        if (this.autoSolving) return;
         
         this.autoSolving = true;
         document.getElementById('solve-game').disabled = true;

@@ -19,7 +19,8 @@
       "mcp__playwright__browser_resize",
       "mcp__playwright__browser_install",
       "Bash(pkill:*)",
-      "Bash(open http://localhost:8000)"
+      "Bash(open http://localhost:8000)",
+      "mcp__playwright__browser_handle_dialog"
     ],
     "deny": [],
     "ask": [],

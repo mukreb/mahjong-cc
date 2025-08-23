@@ -18,12 +18,14 @@ body {
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    max-width: 95vw;
+    width: min(95vw, 800px);
     max-height: 95vh;
     margin: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 header {
@@ -33,6 +35,9 @@ header {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 2px solid #eee;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 h1 {
@@ -45,12 +50,18 @@ h1 {
     justify-content: space-between;
     align-items: center;
     gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    flex-wrap: wrap;
 }
 
 .stats {
     display: flex;
     gap: 20px;
     align-items: center;
+    flex-wrap: wrap;
+    min-width: 0;
 }
 
 .stats span {
@@ -62,6 +73,8 @@ h1 {
 .controls {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+    min-width: 0;
 }
 
 .controls button {
@@ -145,12 +158,14 @@ h1 {
     background: #2E5832;
     padding: 15px;
     border-radius: 10px;
-    width: min(700px, 90vw);
+    width: 100%;
+    max-width: 700px;
     height: auto;
     aspect-ratio: 10/8;
     margin: 0 auto;
     justify-self: center;
     box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+    box-sizing: border-box;
 }
 
 .tile {
@@ -602,17 +617,34 @@ h1 {
     background: #757575;
 }
 
+/* Large screens - ensure proper container sizing */
+@media (min-width: 951px) {
+    .game-container {
+        width: min(95vw, 800px);
+        box-sizing: border-box;
+    }
+    
+    .game-board {
+        width: 100%;
+        max-width: 700px;
+        box-sizing: border-box;
+    }
+}
+
 /* Tablet styles */
 @media (max-width: 950px) {
     .game-container {
         padding: 15px;
-        max-width: 98vw;
+        width: min(98vw, 750px);
+        box-sizing: border-box;
     }
     
     .game-board {
-        width: min(600px, 95vw);
+        width: 100%;
+        max-width: 600px;
         gap: 3px;
         padding: 12px;
+        box-sizing: border-box;
     }
     
     .tile {
@@ -645,14 +677,16 @@ h1 {
     .game-container {
         padding: 10px;
         border-radius: 10px;
-        max-width: 100vw;
+        width: 100vw;
         max-height: 100vh;
+        box-sizing: border-box;
     }
     
     .game-board {
-        width: 95vw;
+        width: 100%;
         gap: 2px;
         padding: 8px;
+        box-sizing: border-box;
     }
     
     .tile {
