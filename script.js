@@ -1,3 +1,97 @@
+// Supabase Configuration
+class SupabaseManager {
+    constructor() {
+        // TODO: Replace with actual Supabase credentials
+        this.SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+        this.SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+        
+        // Initialize Supabase client if credentials are provided
+        if (this.SUPABASE_URL.startsWith('http') && this.SUPABASE_ANON_KEY.length > 20) {
+            this.supabase = window.supabase.createClient(this.SUPABASE_URL, this.SUPABASE_ANON_KEY);
+        } else {
+            console.warn('Supabase credentials not configured. Using local storage fallback.');
+            this.supabase = null;
+        }
+        
+        this.tableName = 'mahjong_highscores';
+    }
+    
+    async saveHighscore(playerName, completionTime) {
+        if (this.supabase) {
+            try {
+                const { data, error } = await this.supabase
+                    .from(this.tableName)
+                    .insert([
+                        {
+                            player_name: playerName,
+                            completion_time: completionTime,
+                            completed_at: new Date().toISOString()
+                        }
+                    ]);
+                
+                if (error) throw error;
+                return { success: true, data };
+            } catch (error) {
+                console.error('Error saving to Supabase:', error);
+                return this.saveHighscoreLocal(playerName, completionTime);
+            }
+        } else {
+            return this.saveHighscoreLocal(playerName, completionTime);
+        }
+    }
+    
+    async getHighscores(limit = 10) {
+        if (this.supabase) {
+            try {
+                const { data, error } = await this.supabase
+                    .from(this.tableName)
+                    .select('player_name, completion_time, completed_at')
+                    .order('completion_time', { ascending: true })
+                    .limit(limit);
+                
+                if (error) throw error;
+                return { success: true, data };
+            } catch (error) {
+                console.error('Error fetching from Supabase:', error);
+                return this.getHighscoresLocal();
+            }
+        } else {
+            return this.getHighscoresLocal();
+        }
+    }
+    
+    saveHighscoreLocal(playerName, completionTime) {
+        try {
+            let highscores = JSON.parse(localStorage.getItem('mahjong_highscores') || '[]');
+            highscores.push({
+                player_name: playerName,
+                completion_time: completionTime,
+                completed_at: new Date().toISOString()
+            });
+            
+            // Sort by completion time and keep only top 50
+            highscores.sort((a, b) => a.completion_time - b.completion_time);
+            highscores = highscores.slice(0, 50);
+            
+            localStorage.setItem('mahjong_highscores', JSON.stringify(highscores));
+            return { success: true, data: highscores };
+        } catch (error) {
+            console.error('Error saving to local storage:', error);
+            return { success: false, error };
+        }
+    }
+    
+    getHighscoresLocal() {
+        try {
+            const highscores = JSON.parse(localStorage.getItem('mahjong_highscores') || '[]');
+            return { success: true, data: highscores.slice(0, 10) };
+        } catch (error) {
+            console.error('Error fetching from local storage:', error);
+            return { success: false, error };
+        }
+    }
+}
+
 class MahjongGame {
     constructor() {
         this.GRID_WIDTH = 18;
@@ -14,6 +108,10 @@ class MahjongGame {
         this.timerInterval = null;
         this.solvingInProgress = false;
         this.solveDelay = 400; // Reduced for faster rapid solving
+        this.gameCompleted = false;
+        
+        // Initialize Supabase manager
+        this.supabaseManager = new SupabaseManager();
         
         this.tileSymbols = [
             '🀇', '🀈', '🀉', '🀊', '🀋', '🀌', '🀍', '🀎', '🀏',
@@ -522,7 +620,9 @@ class MahjongGame {
     }
     
     checkWinCondition() {
-        if (this.tilesRemaining === 0) {
+        if (this.tilesRemaining === 0 && !this.gameCompleted) {
+            this.gameCompleted = true;
+            
             // Calculate final time
             const finalTime = Date.now() - this.gameStartTime - this.pausedTime;
             const totalSeconds = Math.floor(finalTime / 1000);
@@ -530,12 +630,148 @@ class MahjongGame {
             const seconds = totalSeconds % 60;
             const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
-            this.showMessage(`Congratulations! You completed the game in ${timeString}!`, 'success');
-            
+            // Stop the timer
             if (this.timerInterval) {
                 clearInterval(this.timerInterval);
             }
+            
+            // Show highscore modal
+            this.showHighscoreModal(totalSeconds, timeString);
         }
+    }
+    
+    showHighscoreModal(completionTimeSeconds, timeString) {
+        const modal = document.getElementById('highscore-modal');
+        const completionMessage = document.getElementById('completion-message');
+        
+        completionMessage.textContent = `You completed the game in ${timeString}! 🎉`;
+        
+        // Load and display current highscores
+        this.loadHighscores();
+        
+        // Show the modal
+        modal.classList.remove('hidden');
+        
+        // Focus on name input
+        setTimeout(() => {
+            document.getElementById('player-name').focus();
+        }, 100);
+    }
+    
+    async loadHighscores() {
+        const highscoresList = document.getElementById('highscores-list');
+        highscoresList.innerHTML = '<div class="loading">Loading highscores...</div>';
+        
+        try {
+            const result = await this.supabaseManager.getHighscores();
+            
+            if (result.success && result.data.length > 0) {
+                this.displayHighscores(result.data);
+            } else {
+                highscoresList.innerHTML = '<div class="loading">No highscores yet. Be the first!</div>';
+            }
+        } catch (error) {
+            console.error('Error loading highscores:', error);
+            highscoresList.innerHTML = '<div class="error-message">Failed to load highscores</div>';
+        }
+    }
+    
+    displayHighscores(highscores) {
+        const highscoresList = document.getElementById('highscores-list');
+        
+        if (highscores.length === 0) {
+            highscoresList.innerHTML = '<div class="loading">No highscores yet. Be the first!</div>';
+            return;
+        }
+        
+        highscoresList.innerHTML = highscores
+            .map((score, index) => {
+                const minutes = Math.floor(score.completion_time / 60);
+                const seconds = score.completion_time % 60;
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                return `
+                    <div class="highscore-entry">
+                        <div class="highscore-rank">${index + 1}.</div>
+                        <div class="highscore-name">${this.escapeHtml(score.player_name)}</div>
+                        <div class="highscore-time">${timeString}</div>
+                    </div>
+                `;
+            })
+            .join('');
+    }
+    
+    escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+    
+    async saveHighscore() {
+        const playerName = document.getElementById('player-name').value.trim();
+        
+        if (!playerName) {
+            alert('Please enter your name!');
+            return;
+        }
+        
+        if (playerName.length > 20) {
+            alert('Name must be 20 characters or less!');
+            return;
+        }
+        
+        // Calculate completion time in seconds
+        const finalTime = Date.now() - this.gameStartTime - this.pausedTime;
+        const completionTimeSeconds = Math.floor(finalTime / 1000);
+        
+        const saveButton = document.getElementById('save-score');
+        const originalText = saveButton.textContent;
+        saveButton.textContent = 'Saving...';
+        saveButton.disabled = true;
+        
+        try {
+            const result = await this.supabaseManager.saveHighscore(playerName, completionTimeSeconds);
+            
+            if (result.success) {
+                this.showMessage('Highscore saved successfully!', 'success');
+                // Reload highscores to show the updated list
+                await this.loadHighscores();
+            } else {
+                this.showMessage('Failed to save highscore', 'error');
+            }
+        } catch (error) {
+            console.error('Error saving highscore:', error);
+            this.showMessage('Failed to save highscore', 'error');
+        } finally {
+            saveButton.textContent = originalText;
+            saveButton.disabled = false;
+            this.closeHighscoreModal();
+        }
+    }
+    
+    closeHighscoreModal() {
+        const modal = document.getElementById('highscore-modal');
+        modal.classList.add('hidden');
+        
+        // Reset form
+        document.getElementById('player-name').value = '';
+    }
+    
+    async showHighscoresOnly() {
+        const modal = document.getElementById('highscore-modal');
+        const completionMessage = document.getElementById('completion-message');
+        const form = document.querySelector('.highscore-form');
+        
+        // Hide completion message and form
+        completionMessage.style.display = 'none';
+        form.style.display = 'none';
+        
+        // Load and show highscores
+        await this.loadHighscores();
+        modal.classList.remove('hidden');
     }
     
     findAllMatches() {
@@ -812,7 +1048,9 @@ class MahjongGame {
             this.selectedTile = null;
             this.solvingInProgress = false;
             this.gamePaused = false;
+            this.gameCompleted = false;
             this.clearConnectionLine();
+            this.closeHighscoreModal();
             document.getElementById('pause-game').textContent = 'Pause';
             this.initializeGame();
             this.showMessage('New game started!', 'success');
@@ -826,6 +1064,36 @@ class MahjongGame {
         
         document.getElementById('pause-game').addEventListener('click', () => {
             this.pauseGame();
+        });
+        
+        // Highscore modal event listeners
+        document.getElementById('save-score').addEventListener('click', () => {
+            this.saveHighscore();
+        });
+        
+        document.getElementById('skip-save').addEventListener('click', () => {
+            this.closeHighscoreModal();
+        });
+        
+        document.getElementById('show-highscores').addEventListener('click', () => {
+            this.showHighscoresOnly();
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('highscore-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'highscore-modal') {
+                this.closeHighscoreModal();
+                // Reset form display in case it was hidden
+                document.getElementById('completion-message').style.display = 'block';
+                document.querySelector('.highscore-form').style.display = 'flex';
+            }
+        });
+        
+        // Enter key to save highscore
+        document.getElementById('player-name').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.saveHighscore();
+            }
         });
     }
 }

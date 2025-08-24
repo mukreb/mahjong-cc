@@ -26,7 +26,31 @@
         </header>
         <div class="game-board" id="game-board"></div>
         <div class="message" id="message"></div>
+        
+        <!-- Highscore Modal -->
+        <div id="highscore-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>🎉 Congratulations!</h2>
+                <p id="completion-message"></p>
+                <div class="highscore-form">
+                    <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+                    <button id="save-score">Save Highscore</button>
+                    <button id="skip-save">Skip</button>
+                </div>
+                <div class="highscores-display">
+                    <h3>Top 10 Scores</h3>
+                    <div id="highscores-list"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Highscores Panel -->
+        <div class="highscores-panel">
+            <button id="show-highscores">Show Highscores</button>
+        </div>
     </div>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>
