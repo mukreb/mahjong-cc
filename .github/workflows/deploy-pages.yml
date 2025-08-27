@@ -24,6 +24,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
+      - name: Create production config
+        run: |
+          cat > config.js << EOF
+          // Production configuration for Supabase
+          window.CONFIG = {
+              SUPABASE_URL: '${{ secrets.SUPABASE_URL }}',
+              SUPABASE_ANON_KEY: '${{ secrets.SUPABASE_ANON_KEY }}'
+          };
+          EOF
+        
       - name: Setup Pages
         uses: actions/configure-pages@v4
         

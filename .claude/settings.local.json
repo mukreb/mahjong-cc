@@ -20,7 +20,15 @@
       "mcp__playwright__browser_install",
       "Bash(pkill:*)",
       "Bash(open http://localhost:8000)",
-      "mcp__playwright__browser_handle_dialog"
+      "mcp__playwright__browser_handle_dialog",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh workflow run:*)",
+      "Bash(gh run list:*)"
     ],
     "deny": [],
     "ask": [],

@@ -90,6 +90,10 @@ cd mahjong-cc
 # Install dependencies
 npm install
 
+# Configure Supabase (optional - for multiplayer features)
+cp config.example.js config.js
+# Edit config.js with your Supabase credentials
+
 # Start local server
 python3 -m http.server 8000
 # or
@@ -122,9 +126,23 @@ npm run test:ui
 ### Supabase Integration
 For multiplayer functionality and high scores, configure Supabase:
 
-1. Create a Supabase project
+#### Local Development
+1. Create a Supabase project at [supabase.com](https://supabase.com)
 2. Set up the database schema (see `supabase-setup.md`)
-3. Configure environment variables
+3. Copy your credentials:
+   ```bash
+   cp config.example.js config.js
+   ```
+4. Edit `config.js` with your actual Supabase URL and anon key
+
+#### Production Deployment
+Configure GitHub Secrets for automatic deployment:
+1. Go to your GitHub repository Settings → Secrets and variables → Actions
+2. Add these secrets:
+   - `SUPABASE_URL`: Your Supabase project URL
+   - `SUPABASE_ANON_KEY`: Your Supabase anon/public key
+
+The GitHub Actions workflow will automatically create the config file during deployment.
 
 ### Deployment
 The project automatically deploys to GitHub Pages on every push to the main branch via GitHub Actions.

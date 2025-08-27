@@ -33,9 +33,28 @@ class MahjongApp {
     }
 
     async initializeSupabase() {
-        // Note: In production, you would import Supabase properly
-        // For now, we'll simulate the backend functionality
-        console.log('Supabase would be initialized here with project: mhwhsilpkesykgtfvecu');
+        // Check if config is available
+        if (typeof window.CONFIG !== 'undefined') {
+            const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.CONFIG;
+            
+            // Initialize Supabase client if credentials are properly configured
+            if (SUPABASE_URL && SUPABASE_URL.startsWith('http') && 
+                SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.length > 20) {
+                try {
+                    this.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log('Supabase initialized successfully');
+                } catch (error) {
+                    console.error('Failed to initialize Supabase:', error);
+                    this.supabase = null;
+                }
+            } else {
+                console.warn('Supabase credentials not configured properly. Using local storage fallback.');
+                this.supabase = null;
+            }
+        } else {
+            console.warn('Configuration not found. Using local storage fallback.');
+            this.supabase = null;
+        }
     }
 
     setupEventListeners() {
