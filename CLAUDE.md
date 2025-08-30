@@ -9,7 +9,6 @@
 - Backend using supabase
  - name: Mahjong-cc
  - project ID: mhwhsilpkesykgtfvecu
- - password: eru-CBC_mjh-cqy6zjv
 
 # Rules
 - The player can remove matching pairs of tiles where a matched pair has the same face and can be connected by three or less lines. 
